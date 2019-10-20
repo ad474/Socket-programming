@@ -39,22 +39,31 @@ public class client {
             System.out.print(c);
          }
                 System.out.println("");
-         
-//            op.writeDouble(radius); //send radius to server
-//            op.flush();
-            //double area = ip.readDouble(); //get area from server 
-            //System.out.println("Area is:" + area); 
-            Scanner input=new Scanner(System.in);
-            while(true){
                 
-                String s=input.next();
-                if(s.equalsIgnoreCase("bye")){
-                    clients.close(); //close the socket
-                    System.out.println("Socket closed");
-                    break;
-                }
-            
+                
+            Scanner input=new Scanner(System.in);
+            String s=input.next();
+            while(!s.equalsIgnoreCase("bye")){
+                s=input.next();
             }
+            
+            
+            byte[] byeb=new byte[s.length()];
+            for (int i = 0; i < s.length(); i++) {
+                byeb[i]=(byte)s.charAt(i);
+            }
+            op.write(byeb);
+            
+//            while(true){
+//                
+//                String s=input.next();
+//                if(s.equalsIgnoreCase("bye")){
+//                    clients.close(); //close the socket
+//                    System.out.println("Socket closed");
+//                    break;
+//                }
+//            
+//            }
             
         } 
         catch(IOException ex)

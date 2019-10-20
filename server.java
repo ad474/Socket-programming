@@ -56,7 +56,44 @@ class EchoThread extends Thread {
                System.out.print(c);
             }
                 System.out.println("");
+                
+                while(true){
+                    try{
+                        count=ip.available();
+            if(count==0){
+                while(count==0){
+                    count=ip.available();
+                }
+            }
+            //System.out.println("Count="+count);
+            byte[] bs2 = new byte[count];
+         
+            // read data into buffer
+            ip.read(bs2);
+
+            // for each byte in the buffer
+            String temp="";
+            for (byte b:bs2) {
+
+               // convert byte into character
+               char c = (char)b;
+
+               // print the character
+               //System.out.print(c);
+               temp+=c;
+            }
+            if(temp.equalsIgnoreCase("bye")){
+                socket.close();
+                        System.out.println("Socket is closed");
+            return;
+            }
             
+                    }
+                    catch (IOException e) {
+                e.printStackTrace();
+                return;
+            }
+                }
         }
         catch(IOException ex)
             { System.err.println(ex); }
