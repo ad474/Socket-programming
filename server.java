@@ -1,14 +1,26 @@
 import java.net.*; 
 import java.io.*; 
 public class server{
+    static int activeConnections=0;
+    static ServerSocket serversocket;
+    void addOne(){
+        activeConnections++;
+    }
+    void minusOne() throws IOException{
+        activeConnections--;
+        if(activeConnections==0){
+            System.out.println("Connection is closed");
+            serversocket.close();
+        }
+    }
     public static void main(String[] a){
         int clientCount=1;
         try{
-            ServerSocket serversocket = new ServerSocket(8000);
+            serversocket = new ServerSocket(8000);
             System.out.println("Server Started");
             while(true){
                 Socket socket = serversocket.accept(); //listen for connection request
-                new EchoThread(socket).start();
+                new EchoThread(socket,clientCount++).start();
             }
             
         }
@@ -19,15 +31,19 @@ public class server{
         
 class EchoThread extends Thread {
     protected Socket socket;
+    int sno;
+    server connectionCount=new server();
 
-    public EchoThread(Socket clientSocket) {
+    public EchoThread(Socket clientSocket,int c) {
         this.socket = clientSocket;
+        this.sno=c;
     }
 
     public void run() {
         try{
             DataInputStream ip = new DataInputStream(socket.getInputStream()); //create data input & output streams – input from client
             DataOutputStream op = new DataOutputStream(socket.getOutputStream()); //create data input & output streams – output to client 
+            connectionCount.addOne();
             String hello="Hello";
             byte[] hellob=new byte[hello.length()];
             for (int i = 0; i < hello.length(); i++) {
@@ -40,64 +56,44 @@ class EchoThread extends Thread {
                     count=ip.available();
                 }
             }
-            //System.out.println("Count="+count);
             byte[] bs = new byte[count];
-         
-            // read data into buffer
             ip.read(bs);
-
-            // for each byte in the buffer
             for (byte b:bs) {
-
-               // convert byte into character
                char c = (char)b;
-
-               // print the character
                System.out.print(c);
             }
-                System.out.println("");
-                
-                while(true){
-                    try{
-                        count=ip.available();
-            if(count==0){
-                while(count==0){
+            System.out.println("");
+            while(true){
+                try{
                     count=ip.available();
-                }
-            }
-            //System.out.println("Count="+count);
-            byte[] bs2 = new byte[count];
-         
-            // read data into buffer
-            ip.read(bs2);
-
-            // for each byte in the buffer
-            String temp="";
-            for (byte b:bs2) {
-
-               // convert byte into character
-               char c = (char)b;
-
-               // print the character
-               //System.out.print(c);
-               temp+=c;
-            }
-            if(temp.equalsIgnoreCase("bye")){
-                socket.close();
-                        System.out.println("Socket is closed");
-            return;
-            }
-            
+                    if(count==0){
+                        while(count==0){
+                            count=ip.available();
+                        }
                     }
-                    catch (IOException e) {
-                e.printStackTrace();
-                return;
-            }
+                    byte[] bs2 = new byte[count];
+                    ip.read(bs2);
+                    String temp="";
+                    for (byte b:bs2) {
+                        char c = (char)b;
+                        temp+=c;
+                    }
+                    if(temp.equalsIgnoreCase("bye")){
+                        socket.close();
+                        System.out.println("Connection with client "+sno+" closed");
+                        connectionCount.minusOne();
+                        return;
+                    }
+            
                 }
+                catch (IOException e) {
+                    e.printStackTrace();
+                    return;
+                }
+            }
         }
-        catch(IOException ex)
-            { System.err.println(ex); }
-        
+        catch(IOException ex){  
+            System.err.println(ex); 
+        }
     }
 }
-
