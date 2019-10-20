@@ -8,7 +8,24 @@ public class server{
             System.out.println("Server Started");
             while(true){
                 Socket socket = serversocket.accept(); //listen for connection request
-                
+                new EchoThread(socket).start();
+            }
+            
+        }
+        catch(IOException ex)
+            { System.err.println(ex); }
+    }
+}
+        
+class EchoThread extends Thread {
+    protected Socket socket;
+
+    public EchoThread(Socket clientSocket) {
+        this.socket = clientSocket;
+    }
+
+    public void run() {
+        try{
             DataInputStream ip = new DataInputStream(socket.getInputStream()); //create data input & output streams – input from client
             DataOutputStream op = new DataOutputStream(socket.getOutputStream()); //create data input & output streams – output to client 
             String hello="Hello";
@@ -39,10 +56,11 @@ public class server{
                System.out.print(c);
             }
                 System.out.println("");
-            }
             
         }
         catch(IOException ex)
             { System.err.println(ex); }
+        
     }
 }
+
