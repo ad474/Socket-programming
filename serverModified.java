@@ -1,28 +1,42 @@
 import java.net.*; 
 import java.io.*; 
 
-public class server{
+public class serverModified{
+    static int activeConnections=0;
+    static ServerSocket serversocket;
+    void addOne(){
+        activeConnections++;
+    }
+    void minusOne() throws IOException{
+        activeConnections--;
+        if(activeConnections==0){
+            System.out.println("Connection is closed");
+            serversocket.close();
+        }
+    }
     public static void main(String[] a){
         int clientCount=1;
         try{
-            ServerSocket serversocket = new ServerSocket(8000);
+            serversocket = new ServerSocket(8000);
             System.out.println("Server Started");
             while(true){
-                Socket socket = serversocket.accept(); //listen for connection request
-                new EchoThread(socket,clientCount++).start();
+                Socket socket = serversocket.accept();
+                new EchoThreadM(socket,clientCount++).start();
             }
             
         }
         catch(IOException ex)
-            { System.err.println(ex); }
+            { 
+                System.out.println(""); }
     }
 }
         
-class EchoThread extends Thread {
+class EchoThreadM extends Thread {
     protected Socket socket;
     int sno;
+    serverModified connectionCount=new serverModified();
 
-    public EchoThread(Socket clientSocket,int c) {
+    public EchoThreadM(Socket clientSocket,int c) {
         this.socket = clientSocket;
         this.sno=c;
     }
@@ -30,7 +44,8 @@ class EchoThread extends Thread {
     public void run() {
         try{
             DataInputStream ip = new DataInputStream(socket.getInputStream());
-            DataOutputStream op = new DataOutputStream(socket.getOutputStream()); 
+            DataOutputStream op = new DataOutputStream(socket.getOutputStream());
+            connectionCount.addOne();
             String hello="Hello";
             byte[] hellob=new byte[hello.length()];
             for (int i = 0; i < hello.length(); i++) {
@@ -68,6 +83,7 @@ class EchoThread extends Thread {
                     if(temp.equalsIgnoreCase("bye")){
                         socket.close();
                         System.out.println("Connection with client "+sno+" closed");
+                        connectionCount.minusOne();
                         return;
                     }
             
@@ -78,8 +94,8 @@ class EchoThread extends Thread {
                 }
             }
         }
-        catch(IOException ex)
-            { System.err.println(ex); }
-        
+        catch(IOException ex){  
+            System.err.println(ex); 
+        }
     }
 }
